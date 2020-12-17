@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const winston = require('winston');
 const app = express();
 const booksRoute = require('./routes/books');
 require('dotenv').config();
@@ -10,17 +11,33 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({extended:true})); // allows array and objects
 
+// create a logger
+const logger = winston.createLogger({
+    level: 'info',
+    transports: [
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.colorize({all:true})
+            )
+        }),
+        new winston.transports.File({ filename: 'error.log', level: 'error' })
+    ],
+    exceptionHandlers: [
+        new winston.transports.File({ filename: 'exception.log' })
+    ]
+});
+
 // routes
 app.use('/api/books', booksRoute);
 
 // connect to mongodb atlas
 mongoose.connect(process.env.MONGO_URL, {useNewUrlParser: true}).then(() => {
-    console.log('Connected to mongodb atlas');
+    logger.info("Connected to mongoDb atlas")
 }).catch(error => {
-    console.log("There is an error " + error);
+    logger.error(error.message);
 })
 
 // start server
 app.listen(PORT, () => {
-    console.log('Server started at PORT ', PORT);
+    logger.info(`Server started at PORT ${PORT}`);
 })
