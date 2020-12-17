@@ -29,7 +29,7 @@ router.get("/", (req, res) => {
     Book.find()
         .then((books) => res.send(books))
         .catch((error) => {
-            res.status(500).send("Something went wrong");
+            res.status(500).send(error);
         });
 });
 
